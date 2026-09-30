@@ -1,4 +1,8 @@
 const grid=document.getElementById('case-grid');
+const simforgeViewer=document.getElementById('simforge-viewer');
+document.getElementById('load-simforge').addEventListener('click',()=>{simforgeViewer.dismissPoster();document.getElementById('simforge-status').textContent='Loading generated apartment…'});
+simforgeViewer.addEventListener('load',()=>{document.getElementById('simforge-status').textContent='Drag to rotate · scroll to zoom. A cutaway outer wall exposes the room interiors.'});
+simforgeViewer.addEventListener('error',()=>{document.getElementById('simforge-status').textContent='Unable to load the apartment. Please retry.'});
 for(const [id,direction] of [['asset-prev',-1],['asset-next',1]])document.getElementById(id).addEventListener('click',()=>{const gallery=document.getElementById('asset-grid');gallery.scrollBy({left:direction*(gallery.clientWidth+22),behavior:'smooth'})});
 function showCases(group){const prefix=group==='real'?'RealCase':'GenCase';grid.replaceChildren();for(let i=1;i<=4;i++){const card=document.createElement('figure');card.className='case-card';const img=document.createElement('img');img.src=`static/media/DataShow/${prefix}_${i}/image.jpg`;img.alt=`${group==='real'?'Real':'Synthesized'} input scene ${i}`;img.loading='lazy';const caption=document.createElement('figcaption');caption.textContent=`${group==='real'?'Real':'Synthesized'} input ${String(i).padStart(2,'0')}`;card.append(img,caption);grid.append(card)}}showCases('real');
 document.querySelectorAll('[data-group]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-group]').forEach(b=>b.classList.toggle('active',b===button));showCases(button.dataset.group)}));
