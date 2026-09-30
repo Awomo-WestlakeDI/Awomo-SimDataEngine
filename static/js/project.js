@@ -2,14 +2,36 @@ const grid=document.getElementById('case-grid');
 const simforgeViewer=document.getElementById('simforge-viewer');
 const articulationButtons=[...simforgeViewer.querySelectorAll('[data-articulation]')];
 let activeJoint=null,jointOpen=false,jointFrame=0;
+let collisionAudit=null;
+const collisionReady=fetch('static/media/simforge-motion-collision.json').then(response=>{
+  if(!response.ok)throw new Error('Collision audit unavailable');
+  return response.json();
+}).then(data=>{
+  for(const name of ['Refrigerator','Wardrobe','Filing cabinet']){
+    const limit=data.objects?.[name]?.safeFraction;
+    if(!Number.isFinite(limit)||limit<0||limit>1)throw new Error('Invalid collision limit');
+  }
+  collisionAudit=data;
+}).catch(()=>{});
 simforgeViewer.animationCrossfadeDuration=0;
-simforgeViewer.addEventListener('load',()=>{
+simforgeViewer.addEventListener('load',async()=>{
+  await collisionReady;
+  if(!collisionAudit){
+    document.getElementById('simforge-status').textContent='Collision checks unavailable; articulation controls are disabled.';
+    return;
+  }
   articulationButtons.forEach(b=>{b.disabled=!simforgeViewer.availableAnimations.includes(b.dataset.articulation)});
-  document.getElementById('simforge-status').textContent='Click a labeled object to open or close it · drag to rotate · scroll to zoom. Kinematic preview using source joint axes and limits.';
+  document.getElementById('simforge-status').textContent='Click a labeled object to open or close it · motion stops at the sampled external-obstacle limit.';
 });
 articulationButtons.forEach(button=>button.addEventListener('click',()=>{
   const name=button.dataset.articulation;
-  const views={Refrigerator:['.48m 1m -7.5m','0deg 30deg 4.5m'],Wardrobe:['6.3m 1m -.35m','180deg 65deg 5.5m'],'Filing cabinet':['8.25m .7m -6.65m','0deg 45deg 4m']};
+  if(!collisionAudit)return;
+  const collision=collisionAudit.objects[name];
+  if(collision.safeFraction===0){
+    document.getElementById('simforge-status').textContent=`${name}: motion blocked by an existing scene intersection. No opening is allowed.`;
+    return;
+  }
+  const views={Refrigerator:['.48m 1m -7.5m','0deg 30deg 4.5m'],Wardrobe:['6.3m 1m -.35m','180deg 30deg 5.5m'],'Filing cabinet':['8.25m .7m -6.65m','0deg 45deg 4m']};
   simforgeViewer.cameraTarget=views[name][0];
   simforgeViewer.cameraOrbit=views[name][1];
   cancelAnimationFrame(jointFrame);
@@ -23,7 +45,7 @@ articulationButtons.forEach(button=>button.addEventListener('click',()=>{
   jointFrame=requestAnimationFrame(()=>{
     jointFrame=requestAnimationFrame(()=>{
       const start=simforgeViewer.currentTime;
-      const end=jointOpen?Math.max(0,simforgeViewer.duration-.001):0;
+      const end=jointOpen?Math.max(0,(simforgeViewer.duration-.001)*collision.safeFraction):0;
       simforgeViewer.dataset.animationDuration=String(simforgeViewer.duration);
       const began=performance.now();
       const advance=now=>{
@@ -32,6 +54,9 @@ articulationButtons.forEach(button=>button.addEventListener('click',()=>{
         simforgeViewer.currentTime=start+(end-start)*eased;
         simforgeViewer.dataset.animationTime=String(simforgeViewer.currentTime);
         if(t<1)jointFrame=requestAnimationFrame(advance);
+        else if(jointOpen&&collision.firstCollision){
+          document.getElementById('simforge-status').textContent=`${name}: stopped before a sampled collision with ${collision.firstCollision.obstacles.map(x=>x.replaceAll('_',' ')).join(', ')}. Click again to close.`;
+        }
       };
       jointFrame=requestAnimationFrame(advance);
     });

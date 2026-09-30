@@ -1,0 +1,35 @@
+{
+  "method": "sampled triangle-mesh overlap against external scene obstacles",
+  "samples": 241,
+  "scope": "external obstacles; excludes other parts of the same articulated asset; no dynamics or contact response",
+  "objects": {
+    "Refrigerator": {
+      "safeFraction": 1.0,
+      "firstCollision": null,
+      "initialCollisions": [],
+      "testedObstacles": 44
+    },
+    "Wardrobe": {
+      "safeFraction": 0.37083333333333335,
+      "firstCollision": {
+        "fraction": 0.375,
+        "obstacles": [
+          "laundry_basket"
+        ]
+      },
+      "initialCollisions": [],
+      "testedObstacles": 110
+    },
+    "Filing cabinet": {
+      "safeFraction": 0.44583333333333336,
+      "firstCollision": {
+        "fraction": 0.45,
+        "obstacles": [
+          "storage_rack"
+        ]
+      },
+      "initialCollisions": [],
+      "testedObstacles": 74
+    }
+  }
+}
