@@ -1,4 +1,6 @@
 /* Original academic template layout, with only media-specific adjustments. */
+.publication-links{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px}
+.publication-links .link-block{display:inline-flex;margin:0}
 #articulation > .container{width:100%;min-width:0;max-width:960px}
 #articulation .asset-carousel{width:100%;min-width:0;box-sizing:border-box}
 #articulation .asset-grid{width:100%;min-width:0}
