@@ -3,7 +3,7 @@ const simforgeViewer=document.getElementById('simforge-viewer');
 const articulationButtons=[...simforgeViewer.querySelectorAll('[data-articulation]')];
 let activeJoint=null,jointOpen=false,jointFrame=0;
 let collisionAudit=null;
-const collisionReady=fetch('static/media/simforge-motion-collision.json?v=six-furniture-22').then(response=>{
+const collisionReady=fetch('static/media/simforge-motion-collision.json?v=nightstand-direction-23').then(response=>{
   if(!response.ok)throw new Error('Collision audit unavailable');
   return response.json();
 }).then(data=>{
