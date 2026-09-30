@@ -1,4 +1,6 @@
 /* Original academic template layout, with only media-specific adjustments. */
+.joint-hotspot{border:1px solid #3273dc;border-radius:18px;background:rgba(255,255,255,.94);color:#245ca4;padding:5px 10px;font:inherit;font-size:.75rem;cursor:pointer;box-shadow:0 1px 4px #0002}
+.joint-hotspot:disabled{opacity:.4;cursor:wait}
 .publication-links{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px}
 .publication-links .link-block{display:inline-flex;margin:0}
 #articulation > .container{width:100%;min-width:0;max-width:960px}

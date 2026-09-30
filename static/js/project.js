@@ -1,7 +1,52 @@
 const grid=document.getElementById('case-grid');
 const simforgeViewer=document.getElementById('simforge-viewer');
-simforgeViewer.addEventListener('load',()=>{document.getElementById('simforge-status').textContent='Drag to rotate · scroll to zoom. A cutaway outer wall exposes the room interiors.'});
+const articulationButtons=[...simforgeViewer.querySelectorAll('[data-articulation]')];
+let activeJoint=null,jointOpen=false,jointFrame=0;
+simforgeViewer.animationCrossfadeDuration=0;
+simforgeViewer.addEventListener('load',()=>{
+  articulationButtons.forEach(b=>{b.disabled=!simforgeViewer.availableAnimations.includes(b.dataset.articulation)});
+  document.getElementById('simforge-status').textContent='Click a labeled object to open or close it · drag to rotate · scroll to zoom. Kinematic preview using source joint axes and limits.';
+});
+articulationButtons.forEach(button=>button.addEventListener('click',()=>{
+  const name=button.dataset.articulation;
+  const views={Refrigerator:['.48m 1m -7.5m','0deg 30deg 4.5m'],Wardrobe:['6.3m 1m -.35m','180deg 65deg 5.5m'],'Filing cabinet':['8.25m .7m -6.65m','0deg 45deg 4m']};
+  simforgeViewer.cameraTarget=views[name][0];
+  simforgeViewer.cameraOrbit=views[name][1];
+  cancelAnimationFrame(jointFrame);
+  simforgeViewer.pause();
+  if(activeJoint!==name){
+    activeJoint=name;jointOpen=false;
+    simforgeViewer.animationName=name;
+    simforgeViewer.currentTime=0;
+  }
+  jointOpen=!jointOpen;
+  jointFrame=requestAnimationFrame(()=>{
+    jointFrame=requestAnimationFrame(()=>{
+      const start=simforgeViewer.currentTime;
+      const end=jointOpen?Math.max(0,simforgeViewer.duration-.001):0;
+      simforgeViewer.dataset.animationDuration=String(simforgeViewer.duration);
+      const began=performance.now();
+      const advance=now=>{
+        const t=Math.min(1,(now-began)/1200);
+        const eased=t*t*(3-2*t);
+        simforgeViewer.currentTime=start+(end-start)*eased;
+        simforgeViewer.dataset.animationTime=String(simforgeViewer.currentTime);
+        if(t<1)jointFrame=requestAnimationFrame(advance);
+      };
+      jointFrame=requestAnimationFrame(advance);
+    });
+  });
+  articulationButtons.forEach(b=>b.setAttribute('aria-label',`${b===button&&jointOpen?'Close':'Open'} ${b.dataset.articulation}`));
+  document.getElementById('simforge-status').textContent=`${name}: ${jointOpen?'opening':'closing'} · click again to ${jointOpen?'close':'open'}. Selecting another object resets the previous preview.`;
+}));
 simforgeViewer.addEventListener('error',()=>{document.getElementById('simforge-status').textContent='Unable to load the apartment. Please retry.'});
+document.getElementById('simforge-reset').addEventListener('click',()=>{
+  cancelAnimationFrame(jointFrame);simforgeViewer.pause();simforgeViewer.currentTime=0;
+  activeJoint=null;jointOpen=false;
+  articulationButtons.forEach(b=>b.setAttribute('aria-label',`Open ${b.dataset.articulation}`));
+  simforgeViewer.cameraTarget='auto auto auto';simforgeViewer.cameraOrbit='0deg 35deg auto';
+  document.getElementById('simforge-status').textContent='Click a labeled object to open or close it · drag to rotate · scroll to zoom.';
+});
 for(const [id,direction] of [['asset-prev',-1],['asset-next',1]])document.getElementById(id).addEventListener('click',()=>{const gallery=document.getElementById('asset-grid');gallery.scrollBy({left:direction*(gallery.clientWidth+22),behavior:'smooth'})});
 function showCases(group){const prefix=group==='real'?'RealCase':'GenCase';grid.replaceChildren();for(let i=1;i<=4;i++){const card=document.createElement('button');card.type='button';card.className='case-card scene-choice';card.dataset.case=`${prefix}_${i}`;card.setAttribute('aria-label',`View ${group==='real'?'real':'synthesized'} scene ${i}`);const img=document.createElement('img');img.src=`static/media/DataShow/${prefix}_${i}/image.jpg`;img.alt=`${group==='real'?'Real':'Synthesized'} input scene ${i}`;img.loading='lazy';const caption=document.createElement('span');caption.textContent=`${group==='real'?'Real':'Synthesized'} scene ${String(i).padStart(2,'0')}`;card.append(img,caption);card.addEventListener('click',()=>selectScene(card.dataset.case));grid.append(card)}}showCases('real');
 document.querySelectorAll('[data-group]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-group]').forEach(b=>b.classList.toggle('active',b===button));showCases(button.dataset.group);selectScene(button.dataset.group==='real'?'RealCase_1':'GenCase_1')}));
