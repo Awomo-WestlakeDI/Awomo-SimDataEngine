@@ -30,6 +30,36 @@
       },
       "initialCollisions": [],
       "testedObstacles": 74
+    },
+    "Nightstand 1": {
+      "safeFraction": 0.07916666666666666,
+      "firstCollision": {
+        "fraction": 0.08333333333333333,
+        "obstacles": [
+          "wall_north.001",
+          "wall_south.003"
+        ]
+      },
+      "initialCollisions": [],
+      "testedObstacles": 170
+    },
+    "Nightstand 2": {
+      "safeFraction": 0.07916666666666666,
+      "firstCollision": {
+        "fraction": 0.08333333333333333,
+        "obstacles": [
+          "wall_north.001",
+          "wall_south.003"
+        ]
+      },
+      "initialCollisions": [],
+      "testedObstacles": 163
+    },
+    "Sideboard": {
+      "safeFraction": 1.0,
+      "firstCollision": null,
+      "initialCollisions": [],
+      "testedObstacles": 55
     }
   }
 }

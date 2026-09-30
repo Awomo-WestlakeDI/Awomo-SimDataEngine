@@ -3,11 +3,11 @@ const simforgeViewer=document.getElementById('simforge-viewer');
 const articulationButtons=[...simforgeViewer.querySelectorAll('[data-articulation]')];
 let activeJoint=null,jointOpen=false,jointFrame=0;
 let collisionAudit=null;
-const collisionReady=fetch('static/media/simforge-motion-collision.json').then(response=>{
+const collisionReady=fetch('static/media/simforge-motion-collision.json?v=six-furniture-22').then(response=>{
   if(!response.ok)throw new Error('Collision audit unavailable');
   return response.json();
 }).then(data=>{
-  for(const name of ['Refrigerator','Wardrobe','Filing cabinet']){
+    for(const name of articulationButtons.map(b=>b.dataset.articulation)){
     const limit=data.objects?.[name]?.safeFraction;
     if(!Number.isFinite(limit)||limit<0||limit>1)throw new Error('Invalid collision limit');
   }
@@ -31,7 +31,7 @@ articulationButtons.forEach(button=>button.addEventListener('click',()=>{
     document.getElementById('simforge-status').textContent=`${name}: motion blocked by an existing scene intersection. No opening is allowed.`;
     return;
   }
-  const views={Refrigerator:['.48m 1m -7.5m','0deg 30deg 4.5m'],Wardrobe:['6.3m 1m -.35m','180deg 30deg 5.5m'],'Filing cabinet':['8.25m .7m -6.65m','0deg 45deg 4m']};
+  const views={Refrigerator:['.48m 1m -7.5m','0deg 30deg 4.5m'],Wardrobe:['6.3m 1m -.35m','180deg 30deg 5.5m'],'Filing cabinet':['8.25m .7m -6.65m','0deg 45deg 4m'],'Nightstand 1':['6.486m .5m -3.556m','0deg 35deg 3m'],'Nightstand 2':['8.714m .5m -3.556m','0deg 35deg 3m'],Sideboard:['3.305m .6m -6.2m','-90deg 35deg 4m']};
   simforgeViewer.cameraTarget=views[name][0];
   simforgeViewer.cameraOrbit=views[name][1];
   cancelAnimationFrame(jointFrame);
