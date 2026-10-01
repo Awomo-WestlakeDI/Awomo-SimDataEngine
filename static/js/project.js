@@ -1,4 +1,8 @@
 const grid=document.getElementById('case-grid');
+const robotVideos=[...document.querySelectorAll('#robot-demonstrations video')];
+robotVideos.forEach(video=>video.addEventListener('play',()=>robotVideos.forEach(other=>{if(other!==video)other.pause()})));
+const robotVideoObserver=new IntersectionObserver(entries=>entries.forEach(({target,isIntersecting})=>{if(!isIntersecting)target.pause()}),{threshold:0.05});
+robotVideos.forEach(video=>robotVideoObserver.observe(video));
 const simforgeViewer=document.getElementById('simforge-viewer');
 const articulationButtons=[...simforgeViewer.querySelectorAll('[data-articulation]')];
 let activeJoint=null,jointOpen=false,jointFrame=0;
